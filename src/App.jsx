@@ -14,6 +14,9 @@ import MoodLogger from './components/MoodLogger';
 import Journal from './components/Journal';
 import MoodBoard from './components/MoodBoard';
 
+// Import your background directly (Vite handles this better than string paths)
+import bgImage from './assets/bg2.jpg';
+
 function App() {
   const [user, setUser] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
@@ -23,10 +26,14 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState("dashboard");
 
-  // Auth State Listener
+  // 1. Auth State Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      // Reset to dashboard whenever a user successfully logs in
+      if (currentUser) {
+        setCurrentPage("dashboard");
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -41,16 +48,20 @@ function App() {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
+        // Note: You can add updateProfile(auth.currentUser, {displayName: name}) here later
       }
       setEmail("");
       setPassword("");
     } catch (err) {
-      setError(err.message.replace("Firebase: ", ""));
+      // Cleaner error messages for the UI
+      const message = err.code?.split('/')[1]?.replace(/-/g, ' ') || err.message;
+      setError(message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  // Show Landing Page if user is not logged in
+  // 2. Show Landing Page if user is not logged in
   if (!user) {
     return (
       <LandingPage 
@@ -67,14 +78,17 @@ function App() {
     );
   }
 
-  // Show Protected App if user is logged in
+  // 3. Show Protected App if user is logged in
   return (
-    <div className="min-h-screen font-sans relative overflow-hidden">
+    <div className="min-h-screen font-sans relative overflow-hidden text-white selection:bg-[#F5C96A] selection:text-gray-900">
+      
+      {/* Dynamic Background Layer */}
       <div 
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url('/src/assets/bg2.jpg')` }}
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10 transition-all duration-1000"
+        style={{ backgroundImage: `url(${bgImage})` }}
       >
-        <div className="absolute inset-0 bg-black/65"></div>
+        {/* Softening the background for readability */}
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
       </div>
 
       {/* Navbar Component */}
@@ -84,16 +98,18 @@ function App() {
         user={user} 
       />
 
-      {/* Main Content Area */}
-      <main className="max-w-6xl mx-auto px-8 py-12 relative z-10 text-white min-h-[calc(100vh-80px)]">
-        {currentPage === 'dashboard' && <Dashboard user={user} />}
-        {currentPage === 'mood' && <MoodLogger />}
-        {currentPage === 'journal' && <Journal />}
-        {currentPage === 'moodboard' && <MoodBoard />}
+      {/* Main Content Area with Page Transitions */}
+      <main className="max-w-6xl mx-auto px-6 py-12 relative z-10 min-h-[calc(100vh-160px)]">
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+          {currentPage === 'dashboard' && <Dashboard user={user} />}
+          {currentPage === 'mood' && <MoodLogger />}
+          {currentPage === 'journal' && <Journal user={user} />}
+          {currentPage === 'moodboard' && <MoodBoard user={user} />}
+        </div>
       </main>
 
-      <footer className="text-center py-12 text-xs text-white/60 border-t border-white/20 mt-20 relative z-10">
-        Zenith — Gentle steps toward your highest self
+      <footer className="text-center py-16 text-xs text-white/30 tracking-[0.3em] uppercase relative z-10">
+        Zenith — Built with intention in Kenya
       </footer>
     </div>
   );
