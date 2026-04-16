@@ -1,149 +1,211 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import backgroundImage from './assets/bg2.jpg';
 
+// Component Imports
+import Home from './components/Home';
+import Dashboard from './components/Dashboard';
+
+const moodOptions = [
+  { emoji: "😢", label: "Very Sad", value: "very-sad" },
+  { emoji: "😔", label: "Sad", value: "sad" },
+  { emoji: "😐", label: "Neutral", value: "neutral" },
+  { emoji: "🙂", label: "Good", value: "good" },
+  { emoji: "😊", label: "Very Good", value: "very-good" },
+  { emoji: "🥰", label: "Great", value: "great" },
+];
+
 function App() {
-  const [page, setPage] = useState('dashboard');
+  // 1. STATE MANAGEMENT
+  const [page, setPage] = useState('home'); // Starts on Home pitch
+  const [user, setUser] = useState(null);   // Placeholder for Firebase User
+  const [moods, setMoods] = useState([]);   // User mood data
+  
+  // Mood Entry States
+  const [selectedMood, setSelectedMood] = useState(null);
+  const [intensity, setIntensity] = useState(5);
+  const [note, setNote] = useState("");
+
+  // 2. DATA PERSISTENCE (LocalStorage for now)
+  useEffect(() => {
+    const savedMoods = JSON.parse(localStorage.getItem('zenithMoods') || '[]');
+    setMoods(savedMoods);
+  }, []);
+
+  // 3. NAVIGATION & AUTH LOGIC
+  const navigateTo = (target) => {
+    // If user tries to access private pages without "logging in"
+    // We can simulate the check here
+    const privatePages = ['dashboard', 'mood', 'journal', 'moodboard'];
+    
+    if (privatePages.includes(target) && !user) {
+      // For now, let's just simulate a login when they click "Begin"
+      // In the next step, we will replace this with a real Firebase Login
+      alert("Please Sign In to access your personal sanctuary. ✨");
+      return;
+    }
+    setPage(target);
+  };
+
+  // 4. MOOD SAVING LOGIC
+  const handleSaveMood = () => {
+    if (!selectedMood) return alert("Select a mood first ");
+
+    const newMood = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      mood: selectedMood,
+      intensity,
+      note: note.trim(),
+    };
+
+    const updatedMoods = [newMood, ...moods];
+    setMoods(updatedMoods);
+    localStorage.setItem('zenithMoods', JSON.stringify(updatedMoods));
+
+    // Reset and redirect
+    setSelectedMood(null);
+    setIntensity(5);
+    setNote("");
+    setPage('dashboard');
+  };
 
   return (
-    <div className="min-h-screen font-sans relative overflow-hidden">
-      {/* Background */}
+    <div className="min-h-screen font-sans relative overflow-hidden text-white selection:bg-[#F5C96A] selection:text-gray-900">
+      
+      {/* BACKGROUND LAYER */}
       <div 
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${backgroundImage})`,
-        }}
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-20 scale-105 transition-transform duration-[10s]"
+        style={{ backgroundImage: `url(${backgroundImage})` }}
       >
-        <div className="absolute inset-0 bg-black/65"></div>
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]"></div>
       </div>
 
-      {/* Updated Navbar with Mood Board */}
-      <nav className="bg-white/10 backdrop-blur-2xl border-b border-white/25 sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-8 py-5 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-serif tracking-tight text-white">Zenith</h1>
+      {/* NAVBAR */}
+      <nav className="bg-white/5 backdrop-blur-3xl border-b border-white/10 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-8 py-5 flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setPage('home')}>
+            <h1 className="text-2xl font-serif tracking-tight text-white">Zenith</h1>
           </div>
 
-          <div className="flex items-center gap-8 text-sm font-medium text-white">
-            <button 
-              onClick={() => setPage('dashboard')}
-              className={`px-6 py-2.5 rounded-2xl transition-all hover:bg-white/20 ${page === 'dashboard' ? 'bg-white/30 font-semibold' : ''}`}
-            >
-              Dashboard
-            </button>
-            <button 
-              onClick={() => setPage('mood')}
-              className={`px-6 py-2.5 rounded-2xl transition-all hover:bg-white/20 ${page === 'mood' ? 'bg-white/30 font-semibold' : ''}`}
-            >
-              Log Mood
-            </button>
-            <button 
-              onClick={() => setPage('journal')}
-              className={`px-6 py-2.5 rounded-2xl transition-all hover:bg-white/20 ${page === 'journal' ? 'bg-white/30 font-semibold' : ''}`}
-            >
-              Journal
-            </button>
-            <button 
-              onClick={() => setPage('moodboard')}
-              className={`px-6 py-2.5 rounded-2xl transition-all hover:bg-white/20 ${page === 'moodboard' ? 'bg-white/30 font-semibold' : ''}`}
-            >
-              Mood Board
-            </button>
+          {/* Links */}
+          <div className="hidden md:flex items-center gap-2 text-sm font-medium">
+            <NavButton active={page === 'home'} onClick={() => setPage('home')} label="Home" />
+            <NavButton active={page === 'dashboard'} onClick={() => navigateTo('dashboard')} label="Dashboard" />
+            <NavButton active={page === 'mood'} onClick={() => navigateTo('mood')} label="Log Mood" />
+            <NavButton active={page === 'journal'} onClick={() => navigateTo('journal')} label="Journal" />
           </div>
 
-          <button className="px-5 py-2.5 text-sm font-medium text-white hover:bg-white/20 rounded-2xl transition-colors">
-            Notifications
+          {/* User Action */}
+          <button 
+            onClick={() => setUser({ displayName: "Developer" })} // Simulating login for testing
+            className="px-6 py-2.5 bg-[#F5C96A] hover:bg-white text-gray-900 rounded-full font-bold text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-lg shadow-yellow-500/10"
+          >
+            {user ? 'Profile' : 'Get Started'}
           </button>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-8 py-12 relative z-10">
+      {/* DYNAMIC PAGE CONTENT */}
+      <div className="relative z-10 transition-all duration-700">
         
-        {/* Dashboard Page */}
+        {/* 1. HOME (LANDING) */}
+        {page === 'home' && (
+          <Home onGetStarted={() => {
+            setUser({ displayName: "Zenith User" }); // Simulate Login
+            setPage('dashboard');
+          }} />
+        )}
+
+        {/* 2. DASHBOARD */}
         {page === 'dashboard' && (
-          <div className="text-center text-white">
-            <div className="mb-16">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-6 py-2.5 rounded-3xl text-sm mb-6 border border-white/30">
-                Your daily path to inner peace
-              </div>
-              
-              <h2 className="text-6xl font-serif tracking-tighter leading-tight">
-                Find your <span className="text-[#F5C96A]">Zenith</span>
-              </h2>
-              <p className="mt-6 text-xl text-white/90 max-w-lg mx-auto">
-                A calm space to track your mood, reflect deeply, and receive kind guidance.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-              <div className="bg-white/10 backdrop-blur-xl border border-white/30 rounded-3xl p-8 text-left">
-                <div className="text-5xl font-semibold">7</div>
-                <div className="text-sm text-white/70 mt-1">Day streak</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-xl border border-white/30 rounded-3xl p-8 text-left">
-                <div className="text-5xl font-semibold">82%</div>
-                <div className="text-sm text-white/70 mt-1">Average mood this week</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-xl border border-white/30 rounded-3xl p-8 text-left">
-                <div className="text-5xl font-semibold">12</div>
-                <div className="text-sm text-white/70 mt-1">Journal entries</div>
-              </div>
-            </div>
-          </div>
+          <Dashboard moods={moods} setPage={setPage} user={user} />
         )}
 
-        {/* Log Mood Page */}
+        {/* 3. LOG MOOD */}
         {page === 'mood' && (
-          <div className="max-w-md mx-auto text-center py-20 text-white">
-            <h3 className="text-4xl font-serif mb-6">How are you feeling today?</h3>
-            <p className="text-white/80 text-lg">
-              Choose your mood gently. Everything is saved with care.
-            </p>
-            {/* Mood picker coming in next step */}
-          </div>
-        )}
-
-        {/* Journal Page */}
-        {page === 'journal' && (
-          <div className="max-w-md mx-auto text-center py-20 text-white">
-            <h3 className="text-4xl font-serif mb-6">Today's Reflection</h3>
-            <p className="text-white/80 text-lg">
-              Write freely or use gentle AI prompts.
-            </p>
-          </div>
-        )}
-
-        {/* New Mood Board Page */}
-        {page === 'moodboard' && (
-          <div className="text-white">
-            <div className="mb-12">
-              <h2 className="text-5xl font-serif tracking-tighter mb-3">Monthly Mood Board</h2>
-              <p className="text-white/80 text-lg">
-                Visual overview of your emotions this month • April 2026
-              </p>
+          <main className="max-w-2xl mx-auto px-8 py-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <div className="text-center mb-16">
+              <h2 className="text-6xl font-serif tracking-tighter mb-4">The Daily Log</h2>
+              <p className="text-white/60 text-lg">Honesty is the first step toward peace.</p>
             </div>
 
-            {/* Placeholder for Mood Board */}
-            <div className="bg-white/10 backdrop-blur-xl border border-white/30 rounded-3xl p-12 text-center">
-              <h3 className="text-2xl font-medium mb-4">Your Monthly Emotions</h3>
-              <p className="text-white/70 max-w-md mx-auto">
-                Here you will see a beautiful visual summary of your moods — 
-                color-coded calendar, mood trends, and insights.
-              </p>
-              <div className="mt-10 text-sm text-white/60">
-                Mood Board features coming in the next steps...
+            <div className="grid grid-cols-3 gap-4 mb-12">
+              {moodOptions.map((mood) => (
+                <button
+                  key={mood.value}
+                  onClick={() => setSelectedMood(mood)}
+                  className={`p-8 rounded-[2.5rem] transition-all duration-500 flex flex-col items-center gap-3 border
+                    ${selectedMood?.value === mood.value 
+                      ? 'bg-white/20 border-[#F5C96A] scale-105' 
+                      : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                >
+                  <span className="text-5xl mb-2">{mood.emoji}</span>
+                  <span className="text-sm font-medium">{mood.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {selectedMood && (
+              <div className="space-y-10 animate-in fade-in zoom-in-95 duration-500">
+                <div className="bg-white/5 p-8 rounded-[2.5rem] border border-white/10">
+                  <div className="flex justify-between text-sm mb-6 uppercase tracking-widest text-white/50">
+                    <span>Intensity</span>
+                    <span className="text-[#F5C96A] font-bold">{intensity}/10</span>
+                  </div>
+                  <input
+                    type="range" min="1" max="10" value={intensity}
+                    onChange={(e) => setIntensity(parseInt(e.target.value))}
+                    className="w-full accent-[#F5C96A] cursor-pointer"
+                  />
+                </div>
+
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Capture the thought..."
+                  rows="4"
+                  className="w-full p-8 rounded-[2.5rem] bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#F5C96A] transition-all"
+                />
+
+                <button
+                  onClick={handleSaveMood}
+                  className="w-full py-5 bg-[#F5C96A] hover:bg-white text-gray-950 font-bold rounded-full text-lg transition-all"
+                >
+                  Save Reflection
+                </button>
               </div>
-            </div>
-          </div>
+            )}
+          </main>
         )}
 
-      </main>
+        {/* 4. OTHER PAGES */}
+        {(page === 'journal' || page === 'moodboard') && (
+          <div className="flex items-center justify-center min-h-[50vh]">
+            <p className="text-2xl font-serif italic text-white/30">The {page} is being carefully prepared...</p>
+          </div>
+        )}
+      </div>
 
-      <footer className="text-center py-12 text-xs text-white/60 border-t border-white/20 mt-20 relative z-10">
-        Zenith — Gentle steps toward your highest self
+      {/* FOOTER */}
+      <footer className="text-center py-20 text-xs text-white/20 tracking-[0.3em] uppercase mt-20 relative z-10">
+        Zenith — Gently built in Nairobi
       </footer>
     </div>
   );
 }
+
+// Nav Button Sub-component
+const NavButton = ({ active, onClick, label }) => (
+  <button 
+    onClick={onClick} 
+    className={`px-5 py-2 rounded-full transition-all duration-300 border text-xs uppercase tracking-widest
+      ${active 
+        ? 'bg-white/20 border-white/30 text-white' 
+        : 'bg-transparent border-transparent text-white/50 hover:text-white hover:bg-white/5'}`}
+  >
+    {label}
+  </button>
+);
 
 export default App;
