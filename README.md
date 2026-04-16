@@ -52,10 +52,14 @@ Intelligence: OpenAI API
 Deployment: Vercel
 
 # Running the Project Locally
-1. Clone the Sanctuary
-'''Bash
+
+<details>
+<summary> 1. Clone the Sanctuary</summary>
+
+Bash
 git clone https://github.com/your-username/zenith-wellness.git
-cd zenith-wellness
+cd zenith-wellness </details>
+
 2. Install the Foundation
 '''Bash
 npm install
@@ -84,3 +88,7 @@ allow read, write: if request.auth != null;
 '''Bash
 npm run dev
 Open http://localhost:5173 to begin your journey.
+
+
+# Live Demo
+https://zenith-ebon-rho.vercel.app/
