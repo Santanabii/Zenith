@@ -53,17 +53,22 @@ Deployment: Vercel
 
 # Running the Project Locally
 
-<details>
-<summary> 1. Clone the Sanctuary</summary>
+ 1. Clone the Sanctuary
 
 Bash
+
 git clone https://github.com/your-username/zenith-wellness.git
-cd zenith-wellness </details>
+
+cd zenith-wellness 
 
 2. Install the Foundation
-'''Bash
+
+Bash
+
 npm install
+
 3. Setup the Atmosphere (Environment Variables)
+
 Create a .env file in the root directory. Note: All variables must start with VITE_ for the build tool to recognize them.
 
 '''Code snippet
@@ -78,15 +83,21 @@ VITE_OPENAI_API_KEY=your_openai_api_key
 Ensure .env is added to your .gitignore to protect your keys.
 
 4. Firebase Configuration
+
 Enable Email/Password in the Firebase Auth tab.
 
 Create a Firestore Database and set rules to allow access only to authenticated users:
 
 JavaScript
+
 allow read, write: if request.auth != null;
+
 5. Awaken the App
-'''Bash
+
+Bash
+
 npm run dev
+
 Open http://localhost:5173 to begin your journey.
 
 
