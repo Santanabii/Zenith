@@ -53,16 +53,16 @@ Deployment: Vercel
 
 # Running the Project Locally
 1. Clone the Sanctuary
-Bash
+'''Bash
 git clone https://github.com/your-username/zenith-wellness.git
 cd zenith-wellness
 2. Install the Foundation
-Bash
+'''Bash
 npm install
 3. Setup the Atmosphere (Environment Variables)
 Create a .env file in the root directory. Note: All variables must start with VITE_ for the build tool to recognize them.
 
-Code snippet
+'''Code snippet
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
@@ -81,6 +81,6 @@ Create a Firestore Database and set rules to allow access only to authenticated 
 JavaScript
 allow read, write: if request.auth != null;
 5. Awaken the App
-Bash
+'''Bash
 npm run dev
 Open http://localhost:5173 to begin your journey.
