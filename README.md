@@ -113,4 +113,9 @@ Open http://localhost:5173 to begin your journey.
 # Live Demo
 https://zenith-ebon-rho.vercel.app/
 
+# Screenshots of the site
 
+![alt text](<Screenshot 2026-04-16 095638.png>)
+![alt text](<Screenshot 2026-04-17 111609.png>)
+![alt text](<Screenshot 2026-04-17 111621.png>)
+![alt text](<Screenshot 2026-04-17 111645.png>)
