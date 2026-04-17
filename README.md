@@ -53,6 +53,15 @@ Deployment: Vercel
 
 # Running the Project Locally
 
+Follow these steps to set up and run the project on your local machine.
+
+# Prerequisites
+Make sure you have the following installed:
+
+Node.js (v16 or higher)
+npm
+Git
+
  1. Clone the Sanctuary
 
 Bash
@@ -103,3 +112,5 @@ Open http://localhost:5173 to begin your journey.
 
 # Live Demo
 https://zenith-ebon-rho.vercel.app/
+
+
